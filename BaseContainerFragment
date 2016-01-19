@@ -1,0 +1,69 @@
+package vn.asiantech.pho;
+
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
+
+/**
+ * @author 
+ */
+public class BaseContainerFragment extends Fragment {
+
+    private int mTabBarHeight;
+    private boolean isType;
+
+    /**
+     * Add new child fragment on page
+     *
+     * @param fragment       new child fragment
+     * @param addToBackStack true or false
+     */
+    public void replaceFragment(Fragment fragment, boolean addToBackStack) {
+        FragmentTransaction transaction = getChildFragmentManager()
+                .beginTransaction();
+        if (!addToBackStack) {
+            transaction.addToBackStack(fragment.getTag());
+        }
+        transaction.replace(R.id.frameLayoutContainer, fragment);
+        transaction.commitAllowingStateLoss();
+        getChildFragmentManager().executePendingTransactions();
+    }
+
+    public boolean popFragment() {
+        boolean isPop = false;
+        FragmentManager fm = getChildFragmentManager();
+        if (fm.getBackStackEntryCount() > 1) {
+            isPop = true;
+            getChildFragmentManager().popBackStack();
+        }
+        return isPop;
+    }
+
+    public Fragment getCurrentFragment() {
+        return getChildFragmentManager().findFragmentById(
+                R.id.frameLayoutContainer);
+    }
+
+    public int getmTabBarHeight() {
+        return mTabBarHeight;
+    }
+
+    public void setmTabBarHeight(int mTabBarHeight) {
+        this.mTabBarHeight = mTabBarHeight;
+    }
+
+    /**
+     * @return count in backtrack
+     */
+    public int getCountBackStack() {
+        return getChildFragmentManager().getBackStackEntryCount();
+    }
+
+    public boolean isType() {
+        return isType;
+    }
+
+    public void setIsType(boolean isType) {
+        this.isType = isType;
+    }
+}
