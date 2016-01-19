@@ -1,0 +1,129 @@
+package vn.asiantech.pho;
+
+import android.app.Activity;
+import android.graphics.Bitmap;
+import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.annotation.StringRes;
+import android.support.v4.app.Fragment;
+import android.support.v7.app.AlertDialog;
+
+import com.google.android.gms.analytics.HitBuilders;
+import com.google.android.gms.analytics.Tracker;
+import com.nostra13.universalimageloader.core.DisplayImageOptions;
+import com.nostra13.universalimageloader.core.ImageLoader;
+import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
+
+import org.androidannotations.annotations.AfterViews;
+import org.androidannotations.annotations.EFragment;
+
+import vn.asiantech.pho.ui.MainActivity;
+
+/**
+ * Base Fragment.
+ *
+ * @author
+ */
+@EFragment
+public abstract class BaseFragment extends Fragment {
+
+    protected OnBaseFragmentListener mOnBaseFragmentListener;
+
+    protected ImageLoader mImageLoader;
+    protected DisplayImageOptions mOptions;
+    protected DisplayImageOptions mOptionsSmall;
+    protected DisplayImageOptions mOptionsWidth;
+
+    private Tracker mTracker;
+
+    @Override
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+        try {
+            mOnBaseFragmentListener = (OnBaseFragmentListener) activity;
+        } catch (ClassCastException e) {
+            throw new ClassCastException(activity.toString()
+                    + " must implement OnBaseFragmentListener");
+        }
+    }
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        mImageLoader = ImageLoader.getInstance();
+        mImageLoader.init(ImageLoaderConfiguration.createDefault(getActivity()));
+        mOptions = new DisplayImageOptions.Builder()
+                .cacheInMemory(true)
+                .cacheOnDisk(true)
+                .considerExifParams(true)
+                .bitmapConfig(Bitmap.Config.RGB_565)
+                .showImageOnFail(R.drawable.bg_defaut)
+                .showImageForEmptyUri(R.drawable.bg_defaut)
+                .showImageOnLoading(R.drawable.bg_defaut)
+                .build();
+        mOptionsSmall = new DisplayImageOptions.Builder()
+                .cacheInMemory(true)
+                .cacheOnDisk(true)
+                .considerExifParams(true)
+                .bitmapConfig(Bitmap.Config.RGB_565)
+                .showImageOnFail(R.drawable.bg_defaut_small)
+                .showImageForEmptyUri(R.drawable.bg_defaut_small)
+                .showImageOnLoading(R.drawable.bg_defaut_small)
+                .build();
+        mOptionsWidth = new DisplayImageOptions.Builder()
+                .cacheInMemory(true)
+                .cacheOnDisk(true)
+                .considerExifParams(true)
+                .bitmapConfig(Bitmap.Config.RGB_565)
+                .showImageOnFail(R.drawable.bg_defaut_width)
+                .showImageForEmptyUri(R.drawable.bg_defaut_width)
+                .showImageOnLoading(R.drawable.bg_defaut_width)
+                .build();
+
+        BaseApp application = (BaseApp) getActivity().getApplication();
+        mTracker = application.getDefaultTracker();
+    }
+
+    @AfterViews
+    protected abstract void init();
+
+    protected void showAlertDialog(@NonNull String msg) {
+        new AlertDialog.Builder(getContext())
+                .setMessage(msg)
+                .setPositiveButton(android.R.string.ok, null)
+                .show();
+    }
+
+    protected void showAlertDialog(@StringRes int resId) {
+        showAlertDialog(getString(resId));
+    }
+
+    /**
+     * Add new child fragment on page
+     *
+     * @param fragment    new child fragment
+     * @param isBackStack true or false
+     */
+    protected void replaceFragment(Fragment fragment, boolean isBackStack) {
+        ((BaseContainerFragment) getParentFragment()).replaceFragment(fragment, isBackStack);
+    }
+
+    protected void popFragment() {
+        ((BaseContainerFragment) getParentFragment()).popFragment();
+    }
+
+    protected void trackerScreen(String screenName) {
+        mTracker.setScreenName(screenName);
+        mTracker.send(new HitBuilders.ScreenViewBuilder().build());
+    }
+
+    /**
+     * set title header in appp
+     */
+    public interface OnBaseFragmentListener {
+        void setTitleHeader(String title);
+
+        void setTypeHeader(MainActivity.HeaderBarType type);
+    }
+
+}
