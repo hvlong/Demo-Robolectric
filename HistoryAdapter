@@ -1,0 +1,136 @@
+package com.myproject.bvdictionary.adapter;
+
+import android.content.Context;
+import android.support.v7.widget.RecyclerView;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.Filter;
+import android.widget.Filterable;
+import android.widget.ImageView;
+import android.widget.TextView;
+
+import com.myproject.bvdictionary.R;
+import com.myproject.bvdictionary.model.WordBO;
+
+import org.androidannotations.annotations.EBean;
+import org.androidannotations.annotations.RootContext;
+
+import java.util.ArrayList;
+import java.util.List;
+
+@EBean
+public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.HistoryHolder> implements Filterable {
+
+    @RootContext
+    Context mContext;
+
+    private List<WordBO> mWordBOs;
+    private IHistoryAdapterCallback mCallback;
+    private List<WordBO> mWordBOFilters;
+
+    public void setData(List<WordBO> wordBOs, IHistoryAdapterCallback callback) {
+        mWordBOs = wordBOs;
+        mWordBOFilters = new ArrayList<>(wordBOs);
+        this.mCallback = callback;
+    }
+
+    @Override
+    public HistoryHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        LayoutInflater inflater = LayoutInflater.from(mContext);
+        View view = inflater.inflate(R.layout.item_rv_history, parent, false);
+        return new HistoryHolder(view);
+    }
+
+    @Override
+    public void onBindViewHolder(HistoryHolder holder, final int position) {
+        WordBO wordBO = mWordBOs.get(position);
+        if (null != wordBO) {
+            holder.tvName.setText(wordBO.getName());
+            if (wordBO.isFavorite()) {
+                holder.imgFavorite.setImageResource(R.drawable.ic_star_on);
+            } else {
+                holder.imgFavorite.setImageResource(R.drawable.ic_star_off);
+            }
+            holder.itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    mCallback.onItemRecycleViewListener(mWordBOs.get(position));
+                }
+            });
+
+            holder.imgFavorite.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    mCallback.onFavoriteItemListener(mWordBOs.get(position));
+                }
+            });
+        }
+    }
+
+    @Override
+    public int getItemCount() {
+        return mWordBOs.size();
+    }
+
+    @Override
+    public Filter getFilter() {
+        return new AllWordAdapterFilter();
+    }
+
+    public class HistoryHolder extends RecyclerView.ViewHolder {
+
+        TextView tvName;
+        ImageView imgFavorite;
+
+        public HistoryHolder(View itemView) {
+            super(itemView);
+            tvName = (TextView) itemView.findViewById(R.id.tvName);
+            imgFavorite = (ImageView) itemView.findViewById(R.id.imgFavorite);
+        }
+    }
+
+
+    public interface IHistoryAdapterCallback {
+        void onItemRecycleViewListener(WordBO wordBO);
+
+        void onFavoriteItemListener(WordBO wordBO);
+    }
+
+
+    public class AllWordAdapterFilter extends Filter{
+
+        @Override
+        protected FilterResults performFiltering(CharSequence constraint) {
+            FilterResults results = new FilterResults();
+            // We implement here the filter logic
+            if (constraint == null || constraint.length() == 0) {
+                // No filter implemented we return all the list
+                results.values = mWordBOFilters;
+                results.count = mWordBOFilters.size();
+            } else {
+                List<WordBO> filteredArrayNames = new ArrayList<>();
+                // perform your search here using the searchConstraint String.
+                constraint = constraint.toString().toLowerCase();
+                for (int i = 0; i < mWordBOFilters.size(); i++) {
+                    String dataNames = mWordBOFilters.get(i).getName();
+                    if (dataNames.toLowerCase().contains(constraint.toString())) {
+                        filteredArrayNames.add(mWordBOFilters.get(i));
+                    }
+                }
+
+                results.count = filteredArrayNames.size();
+                results.values = filteredArrayNames;
+            }
+            return results;
+        }
+
+        @SuppressWarnings("unchecked")
+        @Override
+        protected void publishResults(CharSequence constraint, FilterResults results) {
+            // here you can use result - (f.e. set in in adapter list)
+            mWordBOs = (ArrayList<WordBO>) results.values;
+            notifyDataSetChanged();
+        }
+    }
+}
