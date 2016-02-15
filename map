@@ -1,0 +1,16 @@
+Map<String, String> areaMap = new HashMap<>();
+        for (int i = 0; i < entityArrayList.size(); i++) {
+            if (!areaMap.containsValue(entityArrayList.get(i).getLargerArea())) {
+                areaMap.put(entityArrayList.get(i).getLargerArea(), entityArrayList.get(i).getLargerArea());
+                items.add(new SectionItem(entityArrayList.get(i).getLargerArea()));
+                for (int j = 0; j < entityArrayList.size(); j++) {
+                    if (entityArrayList.get(i).getLargerArea().equals(entityArrayList.get(j).getLargerArea())) {
+                        items.add(new EntryItem(entityArrayList.get(j).getName(), "android 2.2"));
+                    }
+                }
+            }
+
+
+        }
+        
+        http://sunil-android.blogspot.com/2013/08/section-header-listview-in-android.html
